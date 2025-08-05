@@ -7,13 +7,16 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mkdocs-with-confluence)
 # mkdocs-with-confluence 
 
+
 MkDocs plugin that converts markdown pages into confluence markup
 and export it to the Confluence page
 
 ## Setup
-Install the plugin using pip:
-
-`pip install mkdocs-with-confluence`
+Uninstall the original pip package and reinstall this instead
+```
+pip uninstall mkdocs-with-confluence -y
+pip install -e .
+```
 
 Activate the plugin in `mkdocs.yml`:
 
@@ -37,12 +40,15 @@ Use following config and adjust it according to your needs:
         username: <YOUR_USERNAME_TO_CONFLUENCE>
         password: <YOUR_PASSWORD_TO_CONFLUENCE>
         enabled_if_env: MKDOCS_TO_CONFLUENCE
+        bearer_token: <YOUR_PERSONAL_ACCESS_TOKEN>
         #verbose: true
         #debug: true
         dryrun: true
 ```
 
 ## Parameters:
+
+
 
 ### Requirements
 - md2cf
