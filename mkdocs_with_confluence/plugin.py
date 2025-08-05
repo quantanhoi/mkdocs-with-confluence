@@ -45,10 +45,13 @@ class MkdocsWithConfluence(BasePlugin):
         ("verbose", config_options.Type(bool, default=False)),
         ("debug", config_options.Type(bool, default=False)),
         ("dryrun", config_options.Type(bool, default=False)),
+        ("bearer_token", config_options.Type(str, default=environ.get("CONFLUENCE_BEARER_TOKEN", None))),
+
     )
 
     def __init__(self):
         self.enabled = True
+        self.dryrun = False             
         self.confluence_renderer = ConfluenceRenderer(use_xhtml=True)
         self.confluence_mistune = mistune.Markdown(renderer=self.confluence_renderer)
         self.simple_log = False
@@ -147,10 +150,30 @@ class MkdocsWithConfluence(BasePlugin):
 
     def on_page_markdown(self, markdown, page, config, files):
         MkdocsWithConfluence._id += 1
-        if self.config["api_token"]:
-            self.session.auth = (self.config["username"], self.config["api_token"])
-        else:
-            self.session.auth = (self.config["username"], self.config["password"])
+        # -----------------------------------------------------------
+        # Decide which authentication method to use for this session
+        # -----------------------------------------------------------
+        if self.config["bearer_token"]:          # OAuth2 / PAT bearer
+            self.session.headers["Authorization"] = \
+                f"Bearer {self.config['bearer_token']}"
+            self.session.auth = None
+            if self.config["debug"]:
+                print("DEBUG    - Using Bearer-token authentication")
+        elif self.config["api_token"]:           # Basic + API token
+            self.session.auth = (
+                self.config["username"],
+                self.config["api_token"]
+            )
+            if self.config["debug"]:
+                print("DEBUG    - Using Basic auth with API token")
+        else:                                    # Basic + password
+            self.session.auth = (
+                self.config["username"],
+                self.config["password"]
+            )
+            if self.config["debug"]:
+                print("DEBUG    - Using Basic auth with password")
+
 
         if self.enabled:
             if self.simple_log is True:
